@@ -1,0 +1,43 @@
+---
+title: "Exercise 12"
+author: "Maxximus Ramsaroop"
+date: "2024-04-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(infer)
+library(naniar)
+```
+
+
+Exercise 12: Mammal life history
+```{r}
+f<- "https://raw.githubusercontent.com/difiore/ada-2024-datasets/main/Mammal_lifehistories_v2.txt"
+d<- read_tsv(f, col_names = T)
+```
+
+Step 1,2,3: replace -999s with NA, drop litter size & refs, and log transform 
+```{r}
+d<- d|> replace_with_na_all(condition = ~.x == -999) |> dplyr::select(!refs & !`litter size`) |> mutate(order = order, family = family, Genus = Genus, species = species, logmass= log(`mass(g)`), loggestation= log(`gestation(mo)`), lognewborn= log(`newborn(g)`), logweaning= log(`weaning(mo)`), logweanmass= log(`wean mass(g)`), logAFR= log(`AFR(mo)`), logmaxlife= log(`max. life(mo)`), loglitteryear= log(`litters/year`), .keep = "none")
+```
+
+Step 4:Regress age and mass variables on overall body mass + add residuals to df
+```{r}
+
+lmfull<- lm(d$logmass ~ d$loggestation + d$logweaning + d$logAFR + d$logmaxlife + d$lognewborn + d$logweanmass, na.action = na.exclude)
+
+d1<- d|> mutate(relGest =resid(lmfull$loggestation), relWean = resid(lmfull$logweaning), relAFR= resid(lmfull$logAFR), relLife= resid(lmfull$logmaxlife), relNewbornMass= resid(lmfull$lognewborn), relWeaningMass= resid(lmfull$logweanmass))
+
+d1<- d|> mutate(x = 1)
+```
+
+Step 5: Plot residuals:
+```{r}
+
+
+
+```
+
